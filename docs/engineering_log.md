@@ -10,3 +10,7 @@ This document tracks object detection inference benchmarks, safety stock restock
 - **Focus**: refactor: clean up bounding box normalization logic
 - **Technical Summary**: Standardized coordinate bounding box formatting for inventory counts.
 
+### Milestone Log - 2024-08-11 (15:21)
+- **Focus**: docs: add safety stock and reorder point calculations
+- **Technical Summary**: Configured safety stock reorder formulas based on rolling 30-day velocity.
+
