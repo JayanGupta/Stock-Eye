@@ -30,3 +30,7 @@ This document tracks object detection inference benchmarks, safety stock restock
 - **Focus**: docs: add safety stock and reorder point calculations
 - **Technical Summary**: Configured safety stock reorder formulas based on rolling 30-day velocity.
 
+### Milestone Log - 2024-08-27 (10:26)
+- **Focus**: perf: optimize frame buffer batching for video inference
+- **Technical Summary**: Streamlined 640x640 frame resizing and batch inference throughput.
+
