@@ -38,3 +38,7 @@ This document tracks engineering milestones, experiment logs, parameter optimiza
 - **Focus**: docs: update YOLOv8 inventory item detection metrics
 - **Technical Summary**: Documented mAP50=0.88 on retail shelf object detection dataset.
 
+### Milestone Log - 2024-09-09 (19:12)
+- **Focus**: refactor: optimize bounding box coordinate extraction
+- **Technical Summary**: Cleaned coordinate normalization for inventory count tracking.
+
