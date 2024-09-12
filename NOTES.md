@@ -50,3 +50,7 @@ This document tracks engineering milestones, experiment logs, parameter optimiza
 - **Focus**: perf: streamline frame inference batching
 - **Technical Summary**: Optimized inference throughput with resized 640x640 frame buffers.
 
+### Milestone Log - 2024-09-12 (10:53)
+- **Focus**: docs: update YOLOv8 inventory item detection metrics
+- **Technical Summary**: Documented mAP50=0.88 on retail shelf object detection dataset.
+
