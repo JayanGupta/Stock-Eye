@@ -66,3 +66,7 @@ This document tracks object detection inference benchmarks, safety stock restock
 - **Focus**: perf: optimize frame buffer batching for video inference
 - **Technical Summary**: Streamlined 640x640 frame resizing and batch inference throughput.
 
+### Milestone Log - 2024-09-12 (15:24)
+- **Focus**: docs: document YOLOv8 inventory item detection metrics
+- **Technical Summary**: Recorded mAP50=0.88 on shelf inventory object detection validation set.
+
