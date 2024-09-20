@@ -74,3 +74,7 @@ This document tracks engineering milestones, experiment logs, parameter optimiza
 - **Focus**: refactor: optimize bounding box coordinate extraction
 - **Technical Summary**: Cleaned coordinate normalization for inventory count tracking.
 
+### Milestone Log - 2024-09-20 (14:30)
+- **Focus**: docs: add sales forecasting and restocking threshold notes
+- **Technical Summary**: Configured safety stock reorder formulas based on rolling 30-day velocity.
+
