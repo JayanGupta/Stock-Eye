@@ -102,3 +102,7 @@ This document tracks object detection inference benchmarks, safety stock restock
 - **Focus**: docs: document YOLOv8 inventory item detection metrics
 - **Technical Summary**: Recorded mAP50=0.88 on shelf inventory object detection validation set.
 
+### Milestone Log - 2024-11-13 (15:20)
+- **Focus**: refactor: clean up bounding box normalization logic
+- **Technical Summary**: Standardized coordinate bounding box formatting for inventory counts.
+
