@@ -158,3 +158,7 @@ This document tracks engineering milestones, experiment logs, parameter optimiza
 - **Focus**: docs: add sales forecasting and restocking threshold notes
 - **Technical Summary**: Configured safety stock reorder formulas based on rolling 30-day velocity.
 
+### Milestone Log - 2024-11-15 (10:54)
+- **Focus**: perf: streamline frame inference batching
+- **Technical Summary**: Optimized inference throughput with resized 640x640 frame buffers.
+
