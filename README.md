@@ -1,5 +1,4 @@
 <p align="center">
-  <img src="src/data/items.png" alt="Stock-Eye Warehouse Items" width="400"/>
   <h1 align="center">📦 Stock-Eye</h1>
   <p align="center">
     <strong>Intelligent Warehouse Inventory System & AI Demand Forecasting</strong>
