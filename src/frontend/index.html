@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock-Eye — Intelligent Warehouse Inventory</title>
+    <meta name="description"
+        content="AI-powered warehouse inventory tracking with computer vision and demand forecasting">
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div class="app-layout">
+        <!-- ═══ Sidebar ═══ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon">📦</div>
+                    <div>
+                        <h1>Stock-Eye</h1>
+                        <div class="subtitle">Warehouse AI</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                        <span class="nav-icon">📊</span> Dashboard
+                    </a>
+                    <a href="#" class="nav-item" data-page="inventory" id="nav-inventory">
+                        <span class="nav-icon">📋</span> Inventory
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Intelligence</div>
+                    <a href="#" class="nav-item" data-page="detection" id="nav-detection">
+                        <span class="nav-icon">📸</span> Detection
+                    </a>
+                    <a href="#" class="nav-item" data-page="analytics" id="nav-analytics">
+                        <span class="nav-icon">📈</span> Analytics
+                    </a>
+                    <a href="#" class="nav-item" data-page="forecast" id="nav-forecast">
+                        <span class="nav-icon">🔮</span> Forecast
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <p>Stock-Eye v2.0 • Built by Jayan</p>
+            </div>
+        </aside>
+
+        <!-- ═══ Main Content ═══ -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+                    <h2 id="page-title">Dashboard</h2>
+                    <p id="page-subtitle">Overview of your warehouse operations</p>
+                </div>
+                <div class="header-right">
+                    <div class="header-search">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search anything..." id="global-search">
+                    </div>
+                    <div class="header-avatar">JG</div>
+                </div>
+            </header>
+
+            <div class="page-container">
+
+                <!-- ═══ Dashboard Page ═══ -->
+                <div class="page active" id="page-dashboard">
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid" id="kpi-grid">
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Items</span>
+                                <div class="kpi-icon">📦</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-items">—</div>
+                            <div class="kpi-sub">Unique SKUs tracked</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Categories</span>
+                                <div class="kpi-icon">🏷️</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-categories">—</div>
+                            <div class="kpi-sub">Product categories</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Total Stock</span>
+                                <div class="kpi-icon">📊</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-quantity">—</div>
+                            <div class="kpi-sub">Units in warehouse</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Revenue</span>
+                                <div class="kpi-icon">💰</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-revenue">—</div>
+                            <div class="kpi-sub">Total sales revenue</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Wastage</span>
+                                <div class="kpi-icon">⚠️</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-wastage">—</div>
+                            <div class="kpi-sub">Units wasted</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Avg Price</span>
+                                <div class="kpi-icon">💎</div>
+                            </div>
+                            <div class="kpi-value" id="kpi-avg-price">—</div>
+                            <div class="kpi-sub">Average item price</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="glass-card chart-card">
+                            <div class="table-header" style="margin-bottom:0">
+                                <h3><span>📈</span> Monthly Trend</h3>
+                                <div class="table-controls">
+                                    <select id="dashboard-chart-toggle" onchange="updateDashboardChart()"
+                                        style="padding: 4px 8px; font-size: 0.75rem;">
+                                        <option value="revenue">Revenue (₹)</option>
+                                        <option value="volume">Volume (Units)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-sales"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card chart-card">
+                            <h3><span>🍩</span> Category Distribution</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-categories"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Sellers -->
+                    <div class="glass-card table-card">
+                        <div class="table-header">
+                            <h3>🏆 Top Selling Items</h3>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Units Sold</th>
+                                        <th>Revenue</th>
+                                        <th>Performance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="top-items-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Inventory Page ═══ -->
+                <div class="page" id="page-inventory">
+                    <div class="glass-card table-card">
+                        <div class="table-header">
+                            <h3>📋 Inventory Management</h3>
+                            <div class="table-controls">
+                                <input type="text" placeholder="Search items..." id="inv-search"
+                                    oninput="filterInventory()">
+                                <select id="inv-category-filter" onchange="filterInventory()">
+                                    <option value="">All Categories</option>
+                                </select>
+                                <button class="btn btn-primary" onclick="openAddModal()">+ Add Item</button>
+                            </div>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Qty</th>
+                                        <th>Price (₹)</th>
+                                        <th>Sold</th>
+                                        <th>Revenue (₹)</th>
+                                        <th>Wastage</th>
+                                        <th>Expiry</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventory-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Detection Page ═══ -->
+                <div class="page" id="page-detection">
+                    <div class="detection-layout">
+                        <div>
+                            <div class="glass-card" style="padding:24px; margin-bottom:20px">
+                                <h3 style="margin-bottom:16px">📸 Object Detection</h3>
+                                <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+                                    Upload a warehouse image to detect and count items using YOLOv3 computer vision.
+                                </p>
+                                <div class="upload-zone" id="upload-zone"
+                                    onclick="document.getElementById('file-input').click()">
+                                    <div class="upload-icon">🖼️</div>
+                                    <p>Click to upload an image</p>
+                                    <p class="upload-hint">Supports JPG, PNG, WEBP</p>
+                                </div>
+                                <input type="file" id="file-input" accept="image/*" style="display:none"
+                                    onchange="handleImageUpload(event)">
+                                <div id="upload-preview" style="margin-top:16px;display:none">
+                                    <img id="preview-img" class="detection-result-img" alt="Uploaded image"
+                                        style="margin-bottom:12px">
+                                    <div class="form-group" style="text-align: left; margin-bottom: 12px">
+                                        <label>Filter Detections (Comma separated, e.g. "person, car", leave empty for
+                                            all)</label>
+                                        <input type="text" id="filter-classes" placeholder="person, car, apple..."
+                                            style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white;">
+                                    </div>
+                                    <button class="btn btn-primary" style="margin-top:12px;width:100%"
+                                        onclick="runDetection()" id="detect-btn">
+                                        🔍 Run Detection
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="glass-card" style="padding:24px" id="detection-results-card">
+                                <h3 style="margin-bottom:16px">🎯 Detection Results</h3>
+                                <div class="empty-state" id="detection-empty">
+                                    <div class="empty-icon">📷</div>
+                                    <p>Upload an image to see detection results</p>
+                                </div>
+                                <div id="detection-results" style="display:none">
+                                    <img id="result-img" class="detection-result-img" alt="Detection result"
+                                        style="margin-bottom:16px">
+                                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px">
+                                        Detected <strong id="result-count">0</strong> objects
+                                    </p>
+                                    <ul class="detection-list" id="detection-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Analytics Page ═══ -->
+                <div class="page" id="page-analytics">
+                    <div class="charts-grid">
+                        <div class="glass-card chart-card">
+                            <h3><span>📊</span> Monthly Units Sold</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-units"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card chart-card">
+                            <h3><span>🗑️</span> Wastage by Category</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-wastage"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card table-card">
+                        <div class="table-header">
+                            <h3>📦 Category Breakdown</h3>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Items</th>
+                                        <th>Total Stock</th>
+                                        <th>Units Sold</th>
+                                        <th>Revenue (₹)</th>
+                                        <th>Wastage</th>
+                                        <th>Avg Price (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categories-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Forecast Page ═══ -->
+                <div class="page" id="page-forecast">
+                    <div class="kpi-grid" style="margin-bottom:24px">
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Critical Items</span>
+                                <div class="kpi-icon">🔴</div>
+                            </div>
+                            <div class="kpi-value" id="fc-critical">—</div>
+                            <div class="kpi-sub">Need restocking &lt; 30 days</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Warning Items</span>
+                                <div class="kpi-icon">🟡</div>
+                            </div>
+                            <div class="kpi-value" id="fc-warning">—</div>
+                            <div class="kpi-sub">Need restocking &lt; 90 days</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Safe Items</span>
+                                <div class="kpi-icon">🟢</div>
+                            </div>
+                            <div class="kpi-value" id="fc-safe">—</div>
+                            <div class="kpi-sub">Stock levels healthy</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card table-card">
+                        <div class="table-header">
+                            <h3>🔮 Demand Forecast</h3>
+                        </div>
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Category</th>
+                                        <th>Current Stock</th>
+                                        <th>Daily Demand</th>
+                                        <th>Days Remaining</th>
+                                        <th>Risk Level</th>
+                                        <th>Restock Qty</th>
+                                        <th>ML Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="forecast-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ═══ Add/Edit Modal ═══ -->
+    <div class="modal-overlay" id="item-modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <h3 id="modal-title">Add New Item</h3>
+            <form id="item-form" onsubmit="saveItem(event)">
+                <input type="hidden" id="edit-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Item Name</label>
+                        <input type="text" id="f-item" required placeholder="e.g. Apple">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="f-category" required>
+                            <option value="Fruit">Fruit</option>
+                            <option value="Vegetable">Vegetable</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Meat">Meat</option>
+                            <option value="Grains">Grains</option>
+                            <option value="Beverages">Beverages</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" id="f-quantity" required min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Price (₹)</label>
+                        <input type="number" id="f-price" required min="0" step="0.01" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Manufacturing Date</label>
+                        <input type="date" id="f-mfg">
+                    </div>
+                    <div class="form-group">
+                        <label>Expiry Date</label>
+                        <input type="date" id="f-expiry">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity Sold</label>
+                        <input type="number" id="f-sold" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Wastage</label>
+                        <input type="number" id="f-wastage" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="modal-submit">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <span id="toast-icon">✅</span>
+        <span id="toast-msg"></span>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+
+</html>
