@@ -72,7 +72,7 @@ def get_category_breakdown() -> List[Dict[str, Any]]:
 def get_demand_forecast() -> List[Dict[str, Any]]:
     """
     Demand forecast using scikit-learn Linear Regression.
-    Analyzes historical sell-through to predict days until stockout.
+    Optimized for API performance by removing high-overhead loops.
     """
     with get_db() as conn:
         rows = conn.execute("""
@@ -86,30 +86,28 @@ def get_demand_forecast() -> List[Dict[str, Any]]:
         if not rows:
             return []
 
-        # Convert to pandas DataFrame for ML processing
-        df = pd.DataFrame([dict(r) for r in rows])
-
         # Feature engineering: We assume the data spans approximately 1 year (365 days)
-        # We will use Linear Regression to find the relationship between stock depletion
         forecasts = []
-        for _, row in df.iterrows():
-            qty = float(row["quantity"])
-            sold = float(row["quantity_sold"])
-            wastage = float(row["wastage"])
+        days = np.arange(1, 366).reshape(-1, 1) # 1 year of days
 
-            # In a real scenario, we'd have daily sales time-series.
-            # Here we simulate historical cumulative sales using a synthetic time series
-            # to demonstrate an ML regression fit.
-            np.random.seed(int(row["id"])) # deterministic randomness per item
-            days = np.arange(1, 366).reshape(-1, 1) # 1 year of days
-            
-            # Synthetic cumulative sales with some noise
+        # Generate a single array of base noise to avoid random.normal scaling overhead in loops
+        np.random.seed(42)
+        base_noise = np.random.normal(0, 1, 365)
+        
+        # We reuse the model to avoid re-instantiating inside the loop
+        model = LinearRegression()
+
+        for r in rows:
+            qty = float(r["quantity"])
+            sold = float(r["quantity_sold"])
+            wastage = float(r["wastage"])
+
+            # Fast Synthetic cumulative sales
             true_daily_rate = sold / 365.0
-            noise = np.random.normal(0, true_daily_rate * 0.1, 365)
+            noise = base_noise * (true_daily_rate * 0.1)
             cumulative_sold = np.cumsum(np.full(365, true_daily_rate) + noise)
             
-            # Train Linear Regression model
-            model = LinearRegression()
+            # Train Linear Regression model (very fast on 365 items)
             model.fit(days, cumulative_sold)
             
             # The coefficient (slope) represents the learned daily demand rate
@@ -131,15 +129,15 @@ def get_demand_forecast() -> List[Dict[str, Any]]:
                 risk = "safe"
 
             forecasts.append({
-                "id": row["id"],
-                "item": row["item"],
-                "category": row["category"],
+                "id": r["id"],
+                "item": r["item"],
+                "category": r["category"],
                 "current_stock": int(qty),
                 "daily_demand": round(predicted_daily_demand, 2),
                 "days_remaining": round(days_remaining, 1),
                 "risk_level": risk,
-                "recommended_restock": max(0, int((predicted_daily_demand * 90) - qty)), # 90-day supply recommendation
-                "confidence_score": round(model.score(days, cumulative_sold) * 100, 1) # R^2 score %
+                "recommended_restock": max(0, int((predicted_daily_demand * 90) - qty)),
+                "confidence_score": round(model.score(days, cumulative_sold) * 100, 1)
             })
 
         # Sort by risk (critical first) then by fewest days remaining
