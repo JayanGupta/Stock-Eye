@@ -269,7 +269,27 @@
 
                 <!-- ═══ Analytics Page ═══ -->
                 <div class="page" id="page-analytics">
+                    <div class="charts-grid" style="grid-template-columns: 1fr; margin-bottom: 24px;">
+                        <div class="glass-card chart-card">
+                            <h3><span>📈</span> Revenue Growth Trend</h3>
+                            <div class="chart-wrapper" style="height: 300px;">
+                                <canvas id="chart-revenue-trend"></canvas>
+                            </div>
+                        </div>
+                    </div>
                     <div class="charts-grid">
+                        <div class="glass-card chart-card">
+                            <h3><span>🍩</span> Revenue by Category</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-cat-revenue"></canvas>
+                            </div>
+                        </div>
+                        <div class="glass-card chart-card">
+                            <h3><span>🏆</span> Top 10 Earners</h3>
+                            <div class="chart-wrapper">
+                                <canvas id="chart-top-sales"></canvas>
+                            </div>
+                        </div>
                         <div class="glass-card chart-card">
                             <h3><span>📊</span> Monthly Units Sold</h3>
                             <div class="chart-wrapper">
@@ -277,7 +297,7 @@
                             </div>
                         </div>
                         <div class="glass-card chart-card">
-                            <h3><span>🗑️</span> Wastage by Category</h3>
+                            <h3><span>🗑️</span> Wastage % by Category</h3>
                             <div class="chart-wrapper">
                                 <canvas id="chart-wastage"></canvas>
                             </div>
@@ -333,6 +353,14 @@
                             </div>
                             <div class="kpi-value" id="fc-safe">—</div>
                             <div class="kpi-sub">Stock levels healthy</div>
+                        </div>
+                        <div class="glass-card kpi-card animate-in">
+                            <div class="kpi-header">
+                                <span class="kpi-label">Restock Qty</span>
+                                <div class="kpi-icon">📦</div>
+                            </div>
+                            <div class="kpi-value" id="fc-restock">—</div>
+                            <div class="kpi-sub">Total units to order</div>
                         </div>
                     </div>
 

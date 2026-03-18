@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/detect", tags=["detection"])
 @router.post("")
 async def detect_objects(
     file: UploadFile = File(...),
-    filter_classes: str = Form(None)
+    filter_classes: str | None = Form(None)
 ):
     """
     Upload an image and run YOLOv8 object detection.

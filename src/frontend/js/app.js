@@ -399,11 +399,69 @@ async function runDetection() {
 
 // ── Analytics ──────────────────────────────────────────────────────
 async function loadAnalytics() {
-    const [sales, categories, wastage] = await Promise.all([
+    const [sales, categories, wastage, topItems] = await Promise.all([
         fetchJSON('/api/analytics/sales'),
         fetchJSON('/api/analytics/categories'),
         fetchJSON('/api/analytics/wastage'),
+        fetchJSON('/api/analytics/top-items?limit=10'),
     ]);
+
+    // Revenue Growth Trend (Line)
+    if (sales && sales.length) {
+        renderChart('chart-revenue-trend', 'line', {
+            labels: sales.map(s => s.month),
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: sales.map(s => s.revenue),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointHoverRadius: 6,
+            }]
+        }, {
+            scales: {
+                y: { ticks: { callback: v => '₹' + v.toLocaleString() } }
+            }
+        });
+    }
+
+    // Category Revenue (Doughnut)
+    if (categories && categories.length) {
+        renderChart('chart-cat-revenue', 'doughnut', {
+            labels: categories.map(c => c.category),
+            datasets: [{
+                data: categories.map(c => c.total_revenue),
+                backgroundColor: CHART_COLORS.slice(0, categories.length),
+                borderColor: 'transparent',
+                borderWidth: 2,
+                hoverOffset: 8,
+            }]
+        }, {
+            cutout: '65%',
+            plugins: {
+                legend: { position: 'right', labels: { padding: 16, usePointStyle: true, pointStyleWidth: 10 } }
+            }
+        });
+    }
+
+    // Top Earners (Horizontal Bar)
+    if (topItems && topItems.length) {
+        // limit to 10
+        const top10 = topItems.slice(0, 10);
+        renderChart('chart-top-sales', 'bar', {
+            labels: top10.map(t => t.item),
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: top10.map(t => t.total_sales),
+                backgroundColor: 'rgba(59, 130, 246, 0.4)',
+                borderColor: '#3b82f6',
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        }, { indexAxis: 'y' });
+    }
 
     // Units sold chart
     if (sales && sales.length) {
@@ -428,7 +486,7 @@ async function loadAnalytics() {
             datasets: [{
                 label: 'Wastage %',
                 data: wastage.map(w => w.wastage_pct),
-                backgroundColor: 'rgba(239,68,68,0.4)',
+                backgroundColor: 'rgba(239, 68, 68, 0.4)',
                 borderColor: '#ef4444',
                 borderWidth: 1,
                 borderRadius: 6,
@@ -471,10 +529,12 @@ function renderForecastTable(data) {
     const critical = data.filter(f => f.risk_level === 'critical').length;
     const warning = data.filter(f => f.risk_level === 'warning').length;
     const safe = data.filter(f => f.risk_level === 'safe').length;
+    const totalRestock = data.reduce((sum, f) => sum + (f.recommended_restock || 0), 0);
 
     animateValue('fc-critical', critical);
     animateValue('fc-warning', warning);
     animateValue('fc-safe', safe);
+    animateValue('fc-restock', totalRestock);
 
     document.getElementById('forecast-body').innerHTML = data.map(f => {
         const badgeClass = CATEGORY_BADGE[f.category] || '';
