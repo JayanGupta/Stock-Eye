@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from src.backend.config import FRONTEND_DIR
 from src.backend.database import init_db
 from src.backend.seed import seed_inventory
-from src.backend.routes import inventory, detection, analytics
+from src.backend.routes import inventory, detection, analytics, billing
 
 app = FastAPI(
     title="Stock-Eye API",
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(inventory.router)
 app.include_router(detection.router)
 app.include_router(analytics.router)
+app.include_router(billing.router)
 
 # ── Static files (frontend) ─────────────────────────────────────────
 app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="css")

@@ -14,7 +14,7 @@ async def detect_objects(
     filter_classes: str = Form(None)
 ):
     """
-    Upload an image and run YOLOv3 object detection.
+    Upload an image and run YOLOv8 object detection.
     Optionally pass comma-separated test classes in 'filter_classes'.
     Returns detected objects and a base64-encoded annotated image.
     """
@@ -25,7 +25,7 @@ async def detect_objects(
     except Exception:
         raise HTTPException(
             status_code=503,
-            detail="Detection service unavailable. Ensure OpenCV is installed and YOLOv3 weights are in src/data/",
+            detail="Detection service unavailable. Ensure OpenCV is installed and YOLOv8 is configured.",
         )
 
     # Read uploaded image

@@ -2,7 +2,6 @@
 Inventory CRUD API routes.
 """
 from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 from src.backend.database import get_db
 from src.backend.models.schemas import InventoryCreate, InventoryUpdate
 
@@ -11,8 +10,8 @@ router = APIRouter(prefix="/api/inventory", tags=["inventory"])
 
 @router.get("")
 def list_inventory(
-    category: Optional[str] = Query(None, description="Filter by category"),
-    search: Optional[str] = Query(None, description="Search by item name"),
+    category: str | None = Query(None, description="Filter by category"),
+    search: str | None = Query(None, description="Search by item name"),
 ):
     """List all inventory items with optional filters."""
     with get_db() as conn:
@@ -122,3 +121,79 @@ def delete_item(item_id: int):
             raise HTTPException(status_code=404, detail="Item not found")
         conn.execute("DELETE FROM inventory WHERE id = ?", (item_id,))
         return {"message": "Item deleted"}
+
+@router.post("/{item_id}/sell")
+def sell_item(item_id: int):
+    """Simulate selling one unit of an item."""
+    with get_db() as conn:
+        row = conn.execute("SELECT quantity, quantity_sold, price, total_sales FROM inventory WHERE id = ?", (item_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Item not found")
+        if row["quantity"] <= 0:
+            raise HTTPException(status_code=400, detail="Item out of stock")
+            
+        conn.execute("""
+            UPDATE inventory 
+            SET quantity = quantity - 1, 
+                quantity_sold = quantity_sold + 1,
+                total_sales = total_sales + price
+            WHERE id = ?
+        """, (item_id,))
+        conn.execute("INSERT INTO sales_history (item_id, quantity_sold, sale_date, total_sales) VALUES (?, 1, datetime('now'), ?)", (item_id, row["price"]))
+        return {"message": "1 item sold"}
+
+@router.post("/{item_id}/waste")
+def waste_item(item_id: int):
+    """Simulate wasting one unit of an item."""
+    with get_db() as conn:
+        row = conn.execute("SELECT quantity, wastage FROM inventory WHERE id = ?", (item_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Item not found")
+        if row["quantity"] <= 0:
+            raise HTTPException(status_code=400, detail="Item out of stock")
+            
+        conn.execute("""
+            UPDATE inventory 
+            SET quantity = quantity - 1, 
+                wastage = wastage + 1
+            WHERE id = ?
+        """, (item_id,))
+        return {"message": "1 item wasted"}
+
+@router.post("/simulate/bulk")
+def simulate_bulk_activity():
+    """Simulate a randomized day of sales and wastage across all items."""
+    import random
+    with get_db() as conn:
+        rows = conn.execute("SELECT id, quantity, price FROM inventory WHERE quantity > 0").fetchall()
+        
+        sold_total = 0
+        wasted_total = 0
+        
+        for r in rows:
+            # Simulate 0-5 items sold
+            to_sell = min(r["quantity"], random.randint(0, 5))
+            if to_sell > 0:
+                conn.execute("""
+                    UPDATE inventory 
+                    SET quantity = quantity - ?,
+                        quantity_sold = quantity_sold + ?,
+                        total_sales = total_sales + (? * price)
+                    WHERE id = ?
+                """, (to_sell, to_sell, to_sell, r["id"]))
+                conn.execute("INSERT INTO sales_history (item_id, quantity_sold, sale_date, total_sales) VALUES (?, ?, datetime('now'), ? * ?)", (r["id"], to_sell, to_sell, r["price"]))
+                sold_total += to_sell
+                
+            # Simulate 0-1 items wasted (less common)
+            remaining = r["quantity"] - to_sell
+            to_waste = min(remaining, random.randint(0, 1) if random.random() > 0.7 else 0)
+            if to_waste > 0:
+                conn.execute("""
+                    UPDATE inventory 
+                    SET quantity = quantity - ?,
+                        wastage = wastage + ?
+                    WHERE id = ?
+                """, (to_waste, to_waste, r["id"]))
+                wasted_total += to_waste
+                
+        return {"message": f"Simulated activity: {sold_total} sold, {wasted_total} wasted"}

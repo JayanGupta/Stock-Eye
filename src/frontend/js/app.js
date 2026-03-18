@@ -36,6 +36,7 @@ const PAGE_META = {
     detection: { title: 'Detection', subtitle: 'AI-powered object detection' },
     analytics: { title: 'Analytics', subtitle: 'Sales intelligence & insights' },
     forecast: { title: 'Forecast', subtitle: 'Demand forecasting & restocking' },
+    terminal: { title: 'Billing Terminal', subtitle: 'Generate professional PDF bills' },
 };
 
 document.querySelectorAll('.nav-item[data-page]').forEach(item => {
@@ -73,9 +74,10 @@ function toggleSidebar() {
 }
 
 // ── Data Loading ───────────────────────────────────────────────────
-async function fetchJSON(url) {
+async function fetchJSON(url, options = {}) {
+    if (typeof options === 'string') options = { method: options };
     try {
-        const res = await fetch(API + url);
+        const res = await fetch(API + url, options);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return await res.json();
     } catch (err) {
@@ -90,6 +92,7 @@ async function loadPageData(page) {
         case 'inventory': await loadInventory(); break;
         case 'analytics': await loadAnalytics(); break;
         case 'forecast': await loadForecast(); break;
+        case 'terminal': await loadTerminal(); break;
     }
 }
 
@@ -454,19 +457,26 @@ async function loadAnalytics() {
 }
 
 // ── Forecast ───────────────────────────────────────────────────────
+let forecastData = [];
+
 async function loadForecast() {
     const forecast = await fetchJSON('/api/analytics/forecast');
     if (!forecast) return;
 
-    const critical = forecast.filter(f => f.risk_level === 'critical').length;
-    const warning = forecast.filter(f => f.risk_level === 'warning').length;
-    const safe = forecast.filter(f => f.risk_level === 'safe').length;
+    forecastData = forecast;
+    renderForecastTable(forecastData);
+}
+
+function renderForecastTable(data) {
+    const critical = data.filter(f => f.risk_level === 'critical').length;
+    const warning = data.filter(f => f.risk_level === 'warning').length;
+    const safe = data.filter(f => f.risk_level === 'safe').length;
 
     animateValue('fc-critical', critical);
     animateValue('fc-warning', warning);
     animateValue('fc-safe', safe);
 
-    document.getElementById('forecast-body').innerHTML = forecast.map(f => {
+    document.getElementById('forecast-body').innerHTML = data.map(f => {
         const badgeClass = CATEGORY_BADGE[f.category] || '';
         const confColor = f.confidence_score > 80 ? 'var(--accent-green)' : (f.confidence_score > 50 ? 'var(--accent-orange)' : 'var(--accent-red)');
         return `<tr>
@@ -483,8 +493,164 @@ async function loadForecast() {
             </td>
             <td>${f.recommended_restock > 0 ? f.recommended_restock + ' units' : '—'}</td>
             <td><strong style="color:${confColor}">${f.confidence_score}%</strong></td>
+            <td>
+                <button class="btn btn-sm btn-ghost" onclick="sellItem(${f.id})" style="border-color:var(--accent-cyan);color:var(--accent-cyan);padding:4px 8px;font-size:0.7rem;">Sell 1</button>
+                <button class="btn btn-sm btn-ghost" onclick="wasteItem(${f.id})" style="border-color:var(--accent-red);color:var(--accent-red);padding:4px 8px;font-size:0.7rem;margin-left:4px;">Waste 1</button>
+            </td>
         </tr>`;
     }).join('');
+}
+
+function filterForecast() {
+    const search = document.getElementById('forecast-search').value.toLowerCase();
+    const filtered = forecastData.filter(f => f.item.toLowerCase().includes(search));
+    renderForecastTable(filtered);
+}
+
+// ── Simulation Actions ─────────────────────────────────────────────
+async function sellItem(id) {
+    await fetchJSON(`/api/inventory/${id}/sell`, 'POST');
+    toast("Item sold. Recalculating ML Forecast...");
+    await loadForecast();
+    await loadDashboard();
+}
+
+async function wasteItem(id) {
+    await fetchJSON(`/api/inventory/${id}/waste`, 'POST');
+    toast("Item wasted. Recalculating ML Forecast...");
+    await loadForecast();
+    await loadDashboard();
+}
+
+async function simulateActivity() {
+    toast("Simulating warehouse activity across catalog...");
+    await fetchJSON(`/api/inventory/simulate/bulk`, 'POST');
+    setTimeout(async () => {
+        await loadForecast();
+        await loadDashboard();
+        toast("Simulation complete! Forecast and Metrics updated.", false);
+    }, 500); // UI breathing room
+}
+
+// ── Terminal / Billing ──────────────────────────────────────────────
+let billItems = [];
+let terminalInventory = [];
+
+async function loadTerminal() {
+    terminalInventory = await fetchJSON('/api/inventory');
+    if (!terminalInventory) return;
+
+    const sel = document.getElementById('bill-item-select');
+    sel.innerHTML = terminalInventory.map(i => `<option value="${i.id}">${i.item} (₹${i.price}) - In Stock: ${i.quantity}</option>`).join('');
+    renderBillTable();
+}
+
+function addBillItem() {
+    const itemId = parseInt(document.getElementById('bill-item-select').value);
+    const qty = parseInt(document.getElementById('bill-item-qty').value);
+
+    if (!itemId || !qty || qty <= 0) return;
+
+    const itemData = terminalInventory.find(i => i.id === itemId);
+    if (!itemData) return;
+
+    if (qty > itemData.quantity) {
+        toast(`Not enough stock. Only ${itemData.quantity} available.`, true);
+        return;
+    }
+
+    // Check if item already in bill
+    const existing = billItems.find(i => i.id === itemId);
+    if (existing) {
+        if (existing.quantity + qty > itemData.quantity) {
+            toast(`Total exceeds stock capability`, true);
+            return;
+        }
+        existing.quantity += qty;
+    } else {
+        billItems.push({
+            id: itemData.id,
+            item: itemData.item,
+            price: itemData.price,
+            quantity: qty
+        });
+    }
+    document.getElementById('bill-item-qty').value = 1;
+    renderBillTable();
+}
+
+function removeBillItem(id) {
+    billItems = billItems.filter(i => i.id !== id);
+    renderBillTable();
+}
+
+function renderBillTable() {
+    let html = '';
+    let total = 0;
+    billItems.forEach(item => {
+        const lineTotal = item.price * item.quantity;
+        total += lineTotal;
+        html += `<tr>
+            <td><strong>${item.item}</strong></td>
+            <td>${item.quantity}</td>
+            <td>₹${item.price.toFixed(2)}</td>
+            <td>₹${lineTotal.toFixed(2)}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="removeBillItem(${item.id})">❌</button></td>
+        </tr>`;
+    });
+
+    if (billItems.length === 0) {
+        html = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No items in bill yet.</td></tr>`;
+    }
+
+    document.getElementById('bill-items-body').innerHTML = html;
+    document.getElementById('bill-total-due').textContent = `₹${total.toFixed(2)}`;
+}
+
+async function generateBill() {
+    if (billItems.length === 0) {
+        toast("Please add items to bill first", true);
+        return;
+    }
+
+    const customer = document.getElementById('bill-customer').value.trim() || 'Walk-in Customer';
+    const payload = {
+        customer_name: customer,
+        items: billItems.map(i => ({ item: i.item, quantity: i.quantity, price: i.price }))
+    };
+
+    try {
+        const btn = document.querySelector('button[onclick="generateBill()"]');
+        const origText = btn.innerHTML;
+        btn.innerHTML = 'Generating...';
+        btn.disabled = true;
+
+        const res = await fetch(API + '/api/billing/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("API failed");
+
+        const data = await res.json();
+        toast("Bill successfully generated!");
+        window.open(data.download_url, '_blank');
+
+        // Reset
+        billItems = [];
+        document.getElementById('bill-customer').value = '';
+        renderBillTable();
+
+        btn.innerHTML = origText;
+        btn.disabled = false;
+
+    } catch (err) {
+        toast("Failed to generate bill", true);
+        const btn = document.querySelector('button[onclick="generateBill()"]');
+        btn.innerHTML = '🧾 Generate PDF Bill';
+        btn.disabled = false;
+    }
 }
 
 // ── Chart Helper ───────────────────────────────────────────────────

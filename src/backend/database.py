@@ -58,4 +58,13 @@ def init_db():
                 bbox_w          INTEGER,
                 bbox_h          INTEGER
             );
+
+            CREATE TABLE IF NOT EXISTS sales_history (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                item_id         INTEGER NOT NULL,
+                quantity_sold   INTEGER NOT NULL,
+                sale_date       TEXT NOT NULL,
+                total_sales     REAL NOT NULL,
+                FOREIGN KEY(item_id) REFERENCES inventory(id)
+            );
         """)

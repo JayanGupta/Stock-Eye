@@ -17,10 +17,7 @@ DB_PATH = BACKEND_DIR / "stockeye.db"
 # ── Inventory CSV seed file ──────────────────────────────────────────
 INVENTORY_CSV = PROJECT_ROOT / "inventory"
 
-# ── YOLO model files ─────────────────────────────────────────────────
-YOLO_WEIGHTS = DATA_DIR / "yolov3.weights"
-YOLO_CFG = DATA_DIR / "yolov3.cfg"
-COCO_NAMES = DATA_DIR / "coco.names"
+
 
 # ── Detection settings ───────────────────────────────────────────────
 CONFIDENCE_THRESHOLD = 0.5

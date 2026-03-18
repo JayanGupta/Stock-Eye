@@ -5,7 +5,6 @@ import uuid
 import numpy as np
 import cv2 as cv
 from pathlib import Path
-from typing import List, Tuple, Optional
 from ultralytics import YOLO
 
 from src.backend.config import (
@@ -42,10 +41,10 @@ class ObjectDetector:
     def detect(
         self,
         image: np.ndarray,
-        filter_classes: Optional[List[str]] = None,
+        filter_classes: list[str] | None = None,
         conf_threshold: float = CONFIDENCE_THRESHOLD,
         nms_threshold: float = NMS_THRESHOLD,
-    ) -> Tuple[List[dict], np.ndarray]:
+    ) -> tuple[list[dict], np.ndarray]:
         """
         Run detection on an image via YOLOv8. 
         Optionally filter by specific class labels (e.g. ['person', 'bottle']).

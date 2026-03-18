@@ -12,6 +12,8 @@
 </head>
 
 <body>
+    <canvas id="cyber-particles"></canvas>
+
     <div class="app-layout">
         <!-- ═══ Sidebar ═══ -->
         <aside class="sidebar" id="sidebar">
@@ -33,6 +35,9 @@
                     </a>
                     <a href="#" class="nav-item" data-page="inventory" id="nav-inventory">
                         <span class="nav-icon">📋</span> Inventory
+                    </a>
+                    <a href="#" class="nav-item" data-page="terminal" id="nav-terminal">
+                        <span class="nav-icon">💻</span> Terminal
                     </a>
                 </div>
 
@@ -65,10 +70,6 @@
                     <p id="page-subtitle">Overview of your warehouse operations</p>
                 </div>
                 <div class="header-right">
-                    <div class="header-search">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" placeholder="Search anything..." id="global-search">
-                    </div>
                     <div class="header-avatar">JG</div>
                 </div>
             </header>
@@ -338,6 +339,12 @@
                     <div class="glass-card table-card">
                         <div class="table-header">
                             <h3>🔮 Demand Forecast</h3>
+                            <div class="table-controls">
+                                <input type="text" placeholder="Search forecast..." id="forecast-search"
+                                    oninput="filterForecast()">
+                                <button class="btn btn-primary" onclick="simulateActivity()">🎲 Simulate Activity
+                                    (Test)</button>
+                            </div>
                         </div>
                         <div class="table-scroll">
                             <table class="data-table">
@@ -351,9 +358,64 @@
                                         <th>Risk Level</th>
                                         <th>Restock Qty</th>
                                         <th>ML Confidence</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="forecast-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ Terminal Page ═══ -->
+                <div class="page" id="page-terminal">
+                    <div class="glass-card table-card">
+                        <div class="table-header">
+                            <h3>💻 Billing Terminal</h3>
+                            <div class="table-controls">
+                                <input type="text" placeholder="Customer Name" id="bill-customer" style="width:200px">
+                                <button class="btn btn-primary" onclick="generateBill()">🧾 Generate PDF Bill</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 20px; align-items:flex-end; margin-bottom: 20px;">
+                            <div class="form-group" style="flex:2">
+                                <label
+                                    style="display:block;margin-bottom:6px;font-size:0.8rem;color:var(--text-secondary)">Select
+                                    Item to Bill</label>
+                                <select id="bill-item-select"
+                                    style="width:100%;padding:10px;background:var(--bg-secondary);border:1px solid var(--border-glass);color:var(--text-primary);border-radius:var(--radius-sm)"></select>
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label
+                                    style="display:block;margin-bottom:6px;font-size:0.8rem;color:var(--text-secondary)">Quantity</label>
+                                <input type="number" id="bill-item-qty" value="1" min="1"
+                                    style="width:100%;padding:10px;background:var(--bg-secondary);border:1px solid var(--border-glass);color:var(--text-primary);border-radius:var(--radius-sm)">
+                            </div>
+                            <button class="btn btn-ghost" onclick="addBillItem()" style="height:41px">+ Add to
+                                Bill</button>
+                        </div>
+
+                        <div class="table-scroll">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Unit Price</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bill-items-body">
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" style="text-align:right"><strong>Total Due:</strong></td>
+                                        <td colspan="2"><strong id="bill-total-due"
+                                                style="font-size:1.1rem;color:var(--accent-green)">₹0.00</strong></td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
