@@ -8,7 +8,6 @@
 [![statsmodels](https://img.shields.io/badge/statsmodels-Forecasting-333333?style=for-the-badge)](https://www.statsmodels.org)
 [![SQLite](https://img.shields.io/badge/SQLite-07405e?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)](https://chartjs.org)
-[![Status](https://img.shields.io/badge/Status-Complete-2ea44f?style=for-the-badge)]()
 
 *A self-contained warehouse management system combining YOLOv8 computer vision, Exponential Smoothing demand forecasting, PDF billing, and an interactive analytics dashboard — with zero external database dependencies.*
 
