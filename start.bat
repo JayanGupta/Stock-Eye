@@ -46,4 +46,11 @@ echo.
 
 docker compose up --build
 
+if errorlevel 1 (
+    echo.
+    echo  ERROR: docker compose failed. See the output above for details.
+)
+
+echo.
+pause
 endlocal
