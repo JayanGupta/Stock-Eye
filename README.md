@@ -84,9 +84,9 @@ docker compose up --build
 - [x] Postgres + Prisma with driver adapter
 - [x] Auto-seeded workspaces, dashboard, inventory ledger
 - [x] Docker Compose + CI
-- [ ] Realtime YOLOv8 detection (WebSocket + WebGPU client)
-- [ ] ML forecasting platform (Prophet/LightGBM baselines + backtests)
-- [ ] Billing terminal with ledger write-back
+- [x] YOLOv8 detection — image upload, annotated result, detection history
+- [x] ML forecasting platform — gradient boosting, walk-forward backtest, risk table
+- [x] Billing terminal — POS flow, PDF invoice, ledger write-back
 - [ ] Alerts (in-app/email/webhook) & purchase orders
 
 ## License

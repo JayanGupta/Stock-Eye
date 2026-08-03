@@ -1,0 +1,40 @@
+# Dev-only compose: starts Postgres (and optionally the ML API) so you can
+# run the Next.js app locally with hot reload via `pnpm dev`.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   pnpm install
+#   pnpm db:migrate
+#   pnpm db:seed
+#   pnpm dev          # → http://localhost:3000
+#
+# To also start the ML service locally (for forecast / detection / billing PDF):
+#   pip install -r requirements.txt
+#   uvicorn src.backend.main:app --reload --port 8000
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stockeye
+      POSTGRES_PASSWORD: stockeye_dev
+      POSTGRES_DB: stockeye
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stockeye -d stockeye"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata_dev:

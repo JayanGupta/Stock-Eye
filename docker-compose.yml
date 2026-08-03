@@ -1,10 +1,12 @@
 services:
+
+  # ── Infrastructure ─────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: stockeye
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stockeye_prod_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-stockeye_dev}
       POSTGRES_DB: stockeye
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -22,16 +24,33 @@ services:
     ports:
       - "6379:6379"
 
+  # ── DB migrations + seed (runs once, then exits) ───────────────────
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    environment:
+      DATABASE_URL: postgresql://stockeye:${POSTGRES_PASSWORD:-stockeye_dev}@postgres:5432/stockeye
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # ── Python ML service (YOLOv8 + forecasting + invoice PDF) ─────────
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
     restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://stockeye:${POSTGRES_PASSWORD:-stockeye_dev}@postgres:5432/stockeye
     ports:
       - "8000:8000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
+  # ── Next.js web app ────────────────────────────────────────────────
   web:
     build:
       context: .
@@ -40,12 +59,15 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://stockeye:${POSTGRES_PASSWORD:-stockeye_prod_password}@postgres:5432/stockeye
-      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in your .env}
+      DATABASE_URL: postgresql://stockeye:${POSTGRES_PASSWORD:-stockeye_dev}@postgres:5432/stockeye
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is not set — run start.bat or copy .env.example to .env}
       AUTH_TRUST_HOST: "true"
+      ML_API_URL: http://api:8000
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   pgdata:

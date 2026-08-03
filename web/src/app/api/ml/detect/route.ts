@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         image_base64: body.imageBase64,
         filter_classes: body.filterClasses ?? null,
-        include_annotated: body.persist ?? false,
+        include_annotated: true,
       }),
     });
   } catch (err) {
