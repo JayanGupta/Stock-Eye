@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         organizationId,
         imageName: body.imageName ?? "upload.jpg",
         totalObjects: Number(result.total_objects ?? 0),
-        detections: (result.detections as unknown[]) ?? [],
+        detections: JSON.parse(JSON.stringify(result.detections ?? [])),
       },
     });
   }
