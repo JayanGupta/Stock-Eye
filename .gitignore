@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# next.js
+web/.next/
+web/out/
+
+# env
+.env
+.env.*
+!.env.example
+
+# databases
+*.db
+src/backend/stockeye.db
+
+# uploads
+src/backend/uploads/
+
+# python
+__pycache__/
+*.pyc
+
+# misc
+.DS_Store

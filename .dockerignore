@@ -1,0 +1,14 @@
+.git
+.gitignore
+node_modules
+web/node_modules
+web/.next
+web/src/generated
+*.db
+src/backend/stockeye.db
+src/backend/uploads
+__pycache__
+*.pyc
+.env
+.env.*
+!.env.example
