@@ -1,5 +1,5 @@
 """
-Centralized configuration for Stock-Eye backend.
+Centralized configuration for the Stock-Eye ML service.
 """
 import os
 from pathlib import Path
@@ -8,22 +8,25 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent  # Stock-Eye/
 SRC_DIR = PROJECT_ROOT / "src"
 BACKEND_DIR = SRC_DIR / "backend"
-FRONTEND_DIR = SRC_DIR / "frontend"
 DATA_DIR = SRC_DIR / "data"
 
 # ── Database ─────────────────────────────────────────────────────────
-DB_PATH = BACKEND_DIR / "stockeye.db"
+# The ML service reads directly from the Postgres database that the web
+# app owns (managed by Prisma). Schema is created via Prisma migrations.
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://stockeye:stockeye_dev_password@localhost:5432/stockeye",
+)
 
-# ── Inventory CSV seed file ──────────────────────────────────────────
-INVENTORY_CSV = PROJECT_ROOT / "inventory"
-
-
+# ── CORS ─────────────────────────────────────────────────────────────
+CORS_ORIGINS = [
+    o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()
+]
 
 # ── Detection settings ───────────────────────────────────────────────
-CONFIDENCE_THRESHOLD = 0.5
-NMS_THRESHOLD = 0.4
-INPUT_SIZE = (416, 416)
+CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
+NMS_THRESHOLD = float(os.getenv("NMS_THRESHOLD", "0.4"))
 
-# ── Upload folder ────────────────────────────────────────────────────
+# ── Upload / export folder ───────────────────────────────────────────
 UPLOAD_DIR = BACKEND_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

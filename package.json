@@ -1,0 +1,18 @@
+{
+  "name": "stock-eye",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Stock-Eye — Intelligent Warehouse Inventory & AI Demand Forecasting",
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter web typecheck",
+    "db:generate": "pnpm --filter web prisma generate",
+    "db:migrate": "pnpm --filter web prisma migrate dev",
+    "db:studio": "pnpm --filter web prisma studio",
+    "ml:install": "pip install --break-system-packages -r requirements.txt",
+    "ml:dev": "uvicorn src.backend.main:app --host 0.0.0.0 --port 8000 --reload"
+  }
+}

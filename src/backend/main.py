@@ -1,50 +1,35 @@
 """
-Stock-Eye FastAPI Application
+Stock-Eye ML service (FastAPI).
+
+Runs alongside the Next.js web app and provides the ML workloads:
+object detection (YOLOv8), demand forecasting (gradient boosting with
+walk-forward backtesting) and invoice PDF generation. It is stateless
+and reads the Postgres schema owned by the web app.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from src.backend.config import FRONTEND_DIR
-from src.backend.database import init_db
-from src.backend.seed import seed_inventory
-from src.backend.routes import inventory, detection, analytics, billing
+
+from src.backend.config import CORS_ORIGINS
+from src.backend.routes import billing, detection, forecast
 
 app = FastAPI(
-    title="Stock-Eye API",
-    description="Intelligent Warehouse Inventory System",
-    version="2.0.0",
+    title="Stock-Eye ML API",
+    description="YOLOv8 detection, demand forecasting, invoice generation.",
+    version="3.0.0",
 )
 
-# ── CORS ─────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── API Routes ───────────────────────────────────────────────────────
-app.include_router(inventory.router)
 app.include_router(detection.router)
-app.include_router(analytics.router)
+app.include_router(forecast.router)
 app.include_router(billing.router)
 
-# ── Static files (frontend) ─────────────────────────────────────────
-app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="css")
-app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="js")
 
-
-@app.get("/")
-async def serve_frontend():
-    """Serve the main dashboard HTML."""
-    return FileResponse(str(FRONTEND_DIR / "index.html"))
-
-
-# ── Startup ──────────────────────────────────────────────────────────
-@app.on_event("startup")
-def on_startup():
-    """Initialize database and seed data on first run."""
-    init_db()
-    seed_inventory()
-    print("[OK] Stock-Eye backend ready!")
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "stock-eye-ml"}
