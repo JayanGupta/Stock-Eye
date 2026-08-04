@@ -95,7 +95,7 @@ docker compose up --build
 
 ## Deployment (free, GitHub-native)
 
-The app is a full-stack Next.js service, so it cannot run on static hosting (GitHub Pages). Instead, images are published to **GitHub Container Registry** by `.github/workflows/cd.yml` on every push to `main`, and you run them on any host — no CI minutes or hosting fees beyond what you choose.
+The app is a full-stack Next.js service, so it cannot run on static hosting (GitHub Pages). Instead, images are published to **GitHub Container Registry** by `.github/workflows/cd.yml` on every push to `master`, and you run them on any host — no CI minutes or hosting fees beyond what you choose.
 
 1. **Push to GitHub.** The `cd.yml` workflow builds and publishes `ghcr.io/<owner>/<repo>/web` and `.../api` (tags: `latest`, `sha-<sha>`). Make your image public under **Package settings** so a VPS can pull without auth.
 

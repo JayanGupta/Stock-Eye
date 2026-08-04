@@ -1,5 +1,5 @@
 # Production deployment on any Docker host (VPS, Fly.io, Koyeb, Hetzner…).
-# Images are published to GHCR by .github/workflows/cd.yml on every push to main.
+# Images are published to GHCR by .github/workflows/cd.yml on every push to master.
 #
 # Required env (set in deploy/.env):
 #   IMAGE_PREFIX     e.g. ghcr.io/yourname/stock-eye
